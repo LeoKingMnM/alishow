@@ -1,0 +1,113 @@
+{{extend '../layout/layout.html'}}
+
+
+{{block 'body'}}
+<div class="container-fluid">
+  <div class="page-title">
+    <h1>我的个人资料</h1>
+  </div>
+  <!-- 有错误信息时展示 -->
+  <!-- <div class="alert alert-danger">
+      <strong>错误！</strong>发生XXX错误
+    </div> -->
+  <form class="form-horizontal">
+    <div class="form-group">
+      <label class="col-sm-3 control-label">头像</label>
+      <div class="col-sm-6">
+        <label class="form-image">
+          <input id="avatar" type="file">
+          <img id="avatar_img" src="{{admin_pic}}">
+          <input type="hidden" name="pic" id="avatar_hidden">
+          <i class="mask fa fa-upload"></i>
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email" class="col-sm-3 control-label">邮箱</label>
+      <div class="col-sm-6">
+        <input id="email" class="form-control" name="email" type="type" value="{{admin_email}}" readonly>
+        <p class="help-block">登录邮箱不允许修改</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="nickname" class="col-sm-3 control-label">昵称</label>
+      <div class="col-sm-6">
+        <input id="nickname" class="form-control" name="nickname" type="type" value="{{admin_nickname}}">
+        <p class="help-block">限制在 2-16 个字符</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="bio" class="col-sm-3 control-label">简介</label>
+      <div class="col-sm-6">
+        <textarea id="bio" class="form-control" placeholder="Bio" cols="30" rows="6" name="sign">
+            {{admin_sign}}
+          </textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-3 col-sm-6">
+        <button type="submit" class="btn btn-primary">更新</button>
+        <a class="btn btn-link" href="/admin/center/passwd">修改密码</a>
+      </div>
+    </div>
+  </form>
+</div>
+{{/block}}
+
+{{block 'js'}}
+
+<script>
+  $('#avatar').change(function () {
+    // console.dir($(this))
+    //文件中有一个file属性保存了图片
+    var fileObj = $(this)[0].files[0];
+    var fd = new FormData()
+    //FormData中有一个append方法
+    //参数1 ： key   参数2：value
+    //avatar是接口文档中要求的
+    fd.append('avatar', fileObj)
+
+    $.ajax({
+      url: '/api/uploads',
+      type: 'post',
+      data: fd,
+      dataType: 'json',
+      contentType: false,
+      processData: false,
+      success(msg) {
+        alert(msg.message);
+        $('#avatar_img').attr('src', msg.path)
+        //将上传好的图片路径保存到隐藏域
+        $('#avatar_hidden').val(msg.path)
+      }
+    })
+  })
+
+  //更新点击事件
+  $('.btn-primary').click(function () {
+    $.ajax({
+      url: '/api/center/personal',
+      type: 'post',
+      //email=xxx&nickname=yyy&sign=zzz&pic=ppp
+      data: $('.form-horizontal').serialize(),
+      dataType: 'json',
+      success: function (msg) {
+        alert(msg.message);
+        if (msg.code == 200) {
+          $.ajax({
+          url: '/api/login/logout',
+          type: 'post',
+          //email=xxx&nickname=yyy&sign=zzz&pic=ppp
+          dataType: 'json',
+          success(msg){
+            location.href='/admin/login'
+          }
+          })
+        }
+      }
+    })
+  })
+</script>
+
+
+{{/block}}

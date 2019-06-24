@@ -1,0 +1,59 @@
+{{extend '../layout/layout.html'}}
+
+{{block 'body'}}
+<div class="container-fluid">
+  <div class="page-title">
+    <h1>修改栏目</h1>
+  </div>
+  <!-- 有错误信息时展示 -->
+  <!-- <div class="alert alert-danger">
+    <strong>错误！</strong>发生XXX错误
+  </div> -->
+  <div class="row">
+    <div class="col-md-4">
+      <form>
+        <h2>修改栏目信息</h2>
+        <div class="form-group">
+            <label for="id">ID</label>
+            <input id="id" class="form-control" name="id" value="{{cate_id}}" readonly type="text">
+          </div>
+        <div class="form-group">
+          <label for="name">名称</label>
+          <input id="name" class="form-control" name="name" value="{{cate_name}}" type="text">
+        </div>
+        <div class="form-group">
+          <label for="icon">图标</label>
+          <input id="icon" class="form-control" name="icon" value="{{cate_icon}}" type="text">
+        </div>
+        <div class="form-group">
+          <button id="submitBtn" class="btn btn-primary" type="button">修改</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{{/block}}
+
+{{block 'js'}}
+<script>
+//修改按钮注册点击事件，事件函数中：获取表单数据并发送Ajax请求
+$('#submitBtn').click(function () {
+  $.ajax({
+    url: '/admin/cate/modifyCate',
+    type: 'post',
+    data: $('form').serialize(),
+    dataType: 'json',
+    success: function (msg) {
+      //不管成功失败都要进行提示
+      alert(msg.message);
+
+      //如果成功，则跳转回栏目列表页
+      if (msg.code == 200) {
+        location.href = '/admin/cate/cate';
+      }
+    }
+  })
+})
+</script>
+{{/block}}

@@ -1,0 +1,66 @@
+{{extend '../layout/layout.html'}}
+
+{{block 'body'}}
+<div class="container-fluid">
+  <div class="page-title">
+    <h1>添加栏目</h1>
+  </div>
+  <!-- 有错误信息时展示 -->
+  <!-- <div class="alert alert-danger">
+    <strong>错误！</strong>发生XXX错误
+  </div> -->
+  <div class="row">
+    <div class="col-md-4">
+      <form>
+        <h2>添加新栏目</h2>
+        <div class="form-group">
+          <label for="name">名称</label>
+          <input id="name" class="form-control" name="name" type="text" placeholder="分类名称">
+        </div>
+        <div class="form-group">
+          <label for="icon">图标</label>
+          <input id="icon" class="form-control" name="icon" type="text" placeholder="图标">
+        </div>
+        <div class="form-group">
+          <button id="submitBtn" class="btn btn-primary" type="button">添加</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{{/block}}
+
+{{block 'js'}}
+<script>
+//添加按钮上绑定点击事件
+$('#submitBtn').click(function () {
+  //按钮事件： 获取表单数据，发送Ajax请求 
+  //使用FormData获取数据
+  //获取Form标签的DOM对象，再实力化FormData对象并将DOM对象作为参数传入
+  //var fm = $('form')[0];
+  //var fd = new FormData(fm);
+  //FormData类型的数据不能使用body-parser来接收，所以获取表单数据我们换为
+  //serialize方法更好
+
+  //发送Ajax请求 --- 必须使用$.ajax方法，因为$.ajax能发送FormData数据
+  $.ajax({
+    url: '/admin/cate/addCateDeal',
+    type: 'post', // FormData必须使用post方式
+    data: $('form').serialize(),
+    dataType: 'json',
+    success: function (msg) {
+      console.log(msg);
+      alert(msg.message);
+
+      if (msg.code == 200) {
+        //成功，则跳转回列表页
+        location.href = '/admin/cate/cate';
+      }
+    }
+  })
+})
+
+
+</script>
+{{/block}}

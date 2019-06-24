@@ -1,0 +1,107 @@
+
+{{extend '../layout/layout.html'}}
+
+
+{{block 'css'}}
+<link href="/assets/vendors/ued/themes/default/css/umeditor.css" type="text/css" rel="stylesheet">{{/block}}
+{{block 'body'}}
+<div class="container-fluid">
+    <div class="page-title">
+      <h1>写文章</h1>
+    </div>
+    <!-- 有错误信息时展示 -->
+    <!-- <div class="alert alert-danger">
+      <strong>错误！</strong>发生XXX错误
+    </div> -->
+    <form class="row">
+      <div class="col-md-9">
+        <div class="form-group">
+          <label for="title">标题</label>
+          <input id="title" class="form-control input-lg" name="title" type="text" placeholder="文章标题">
+        </div>
+        <div class="form-group">
+          <label for="desc">摘要</label>
+          <textarea id="desc" class="form-control input-lg" name="desc" placeholder="内容"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="content">内容</label>
+            <textarea id="content" name="content" style="width: 100% ;height:200px"></textarea>
+          </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="feature">封面图片</label>
+          <!-- show when image chose -->
+          <img class="help-block thumbnail" style="display: none">
+          <input id="feature" class="form-control" name="feature" type="file">
+        </div>
+        <div class="form-group">
+          <label for="category">所属分类</label>
+          <select id="category" class="form-control" name="category">
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="status">状态</label>
+          <select id="status" class="form-control" name="status">
+            <option value="drafted">草稿</option>
+            <option value="published">已发布</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+      </div>
+    </form>
+  </div>
+{{/block}}
+
+{{block 'js'}}
+<script charset="utf-8" src="/assets/vendors/ued/umeditor.config.js"></script>
+<script charset="utf-8" src="/assets/vendors/ued/umeditor.min.js"></script>
+<script src="/assets/vendors/ued/lang/zh-cn/zh-cn.js"></script>
+<script src="/assets/vendors/art-template/template-web.js"></script>
+<script type="text/html" id="ccccc">
+  {#each data value#}
+  <option value="{#value.cate_id#}">{#value.cate_name#}</option>
+  {#/each#}
+</script>
+<script>
+  var um = UM.getEditor('content');
+  // 重新定义前端模板使用的界定符
+  template.defaults.rules[1].test = /{#([@#]?)[ \t]*(\/?)([\w\W]*?)[ \t]*#}/;
+  //template循环  获取数据并发送ajax请求
+  $.ajax({
+    url:'/api/cate/getCate',
+    type:'post',
+    dataType:'json',
+    success(msg){
+      var str = template('ccccc',msg)
+      $('#category').html(str)
+    }
+  })
+
+
+  //文件域上注册change事件
+ $('#feature').change(function() {
+  //formdata
+  var obj = $(this)[0].files[0]
+  var fd = new FormData()
+  fd.append('avatar',obj)
+  $.ajax({
+    url:'/api/uploads',
+    type:'post',
+    data:fd,
+    dataType:'json',
+    contentType:false,
+    processData:false,
+    success(msg){
+      alert(msg.message)
+      if (msg.code == 200) {
+        $('.thumbnail').attr('src',msg.path).show()
+      }
+    }
+  })
+
+ })
+</script>
+{{/block}}

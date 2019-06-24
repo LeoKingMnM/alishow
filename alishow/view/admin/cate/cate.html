@@ -1,0 +1,116 @@
+{{extend '../layout/layout.html'}}
+
+{{block 'body'}}
+<div class="container-fluid">
+  <div class="page-title">
+    <h1>分类目录</h1>
+  </div>
+  <!-- 有错误信息时展示 -->
+  <!-- <div class="alert alert-danger">
+    <strong>错误！</strong>发生XXX错误
+  </div> -->
+  <div class="row">
+
+    <div class="col-md-8">
+      <div class="page-action">
+        <!-- show when multiple checked -->
+        <a class="btn btn-danger btn-sm" href="javascript:;" style="display: none">批量删除</a>
+      </div>
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th class="text-center" width="40"><input type="checkbox"></th>
+            <th>栏目名称</th>
+            <th>栏目图标</th>
+            <th>创建时间</th> 
+            <th class="text-center" width="100">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tb">
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{/block}}
+
+{{block 'js'}}
+<!-- 以 / 开头的路径都是网络路径，并且是绝对路径 -->
+<!-- 以 / 开头的路径都会自动补充 协议、ip、端口号-->
+<script src="/assets/vendors/art-template/template-web.js"></script>
+
+<script type="text/html" id="cate_list">
+{#each list value#}
+  <tr>
+    <td class="text-center"><input type="checkbox"></td>
+    <td>{#value.cate_name#}</td>
+    <td>{#value.cate_icon#}</td>
+    <td>{#value.cate_addtime#}</td>
+    <td class="text-center">
+      <a href="/admin/cate/editcate?id={#value.cate_id#}" class="btn btn-info btn-xs">编辑</a>
+      <a href="javascript:;" data="{#value.cate_id#}" class="btn del btn-danger btn-xs">删除</a>
+    </td>
+  </tr>
+{#/each#}
+</script>
+
+<script>
+//在每个删除按钮上都注册点击事件 --- 事件委托
+//事件函数: 获取当前行的cate_id，再发送AJax请求并将cate_id一起发送给后端
+$('tbody').on('click', '.del', function () {
+  //提示是否删除
+  if(confirm('您确定删除该栏目吗?') == false) {
+    //点击取消，则不删除
+    return;
+  }
+
+  //获取当前行的cate_id
+  var cate_id = $(this).attr('data');
+  //转存$(this)对象，因为$.ajax的回调函数中需要使用
+  _this = $(this);
+
+  //发送AJax请求并将cate_id一起发送给后端
+  $.ajax({
+    url: '/admin/cate/delCate',
+    type: 'get',
+    data: {id: cate_id},
+    dataType: 'json',
+    success: function (msg) {
+      console.log(msg);
+
+      alert(msg.message);
+
+      if (msg.code == 200) {
+        //如果成功，则需要从页面上删除对象的行 --- DOM
+        //使用当前的删除按钮，找到它爹的爹，再remove
+        _this.parent().parent().remove();
+      }
+    }
+  })
+})
+
+
+
+// 重新定义前端模板使用的界定符
+// 如果使用原来的 {{}} 模式，后端的res.render方法就已经将{{}}全部解析，会
+// 影响到前端页面定义的  cate_list 这个模板字符串
+// 在Ajax请求时，如果后端返回的数据需要显示到页面上可能都会产生这样的问题,都需要
+// 重新定义前端模板使用的界定符
+template.defaults.rules[1].test = /{#([@#]?)[ \t]*(\/?)([\w\W]*?)[ \t]*#}/;
+
+//页面载入时发送Ajax请求
+$.ajax({
+  url: '/admin/cate/getCate',
+  type: 'get',
+  dataType: 'json',
+  success: function (msg) {
+    console.log(msg);
+
+    //调用template函数组装模板和数据，并使用DOM操作显示到tbody标签中
+    var tbodyStr = template('cate_list', msg);
+    $('#tb').html(tbodyStr);
+  }
+})
+</script>
+{{/block}}
